@@ -62,7 +62,7 @@ const MAGNETIC_REPULSION_FORCE = 0.0005;    // 자석 척력
 
 // 블랙홀
 const BLACKHOLE_LIFETIME_MILLI = 8000; // 블랙홀 유지시간
-const BLACKHOLE_RANGEL = 150;   // 블랙홀 영향력 미치는 거리
+const BLACKHOLE_RANGEL = 30;   // 블랙홀 영향력 미치는 거리
 const BLACKHOLE_FORCE = 0.003;
 const BLACKHOLE_SRINK_SPEED = 0.98; // 거리 줄어드는 속도 변화율 (1에 가까울수록 천천히)
 const BLACKHOLE_ROTATION_SPEED = 0.05;  // 회전 속도 (클수록 빠름)
@@ -162,13 +162,10 @@ function spawnUnit(x, y, type, level)
 {
     const color = UnitColor[type];
     data = LEVELS[level];
-    // 합 크기보정(2배)
-    if (data.unitType === UnitType.HAB)
-    {
-        data.circleRadius *= HAB_RADIUS_MULTI;
-    }
+    // 합 크기보정(1.2배)
+    circleRadius = (type === UnitType.HAB) ? data.circleRadius * HAB_RADIUS_MULTI : data.circleRadius;
 
-    const unit = Bodies.circle(x, y, data.circleRadius, {
+    const unit = Bodies.circle(x, y, circleRadius, {
         restitution: RESTITUTION,   // 통통이
         friction: FRICTION,
         mass: data.mass,
@@ -220,9 +217,9 @@ Events.on(engine, 'beforeUpdate', () => {
                 const vecDist = Vector.sub(bodyA.position, bodyB.position);
                 const distance = Vector.magnitude(vecDist);
 
-                if (distance < BLACKHOLE_RANGEL)
+                if (distance < bodyA.circleRadius + BLACKHOLE_RANGEL)
                 {
-                    if (distance * 0.8 <= bodyA.circleRadius + bodyB.circleRadius)
+                    if (distance * 1.2 <= bodyA.circleRadius + bodyB.circleRadius)
                     {
                         absorbUnit(bodyA, bodyB);
                     }
